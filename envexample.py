@@ -7,3 +7,7 @@ ORACLE_PASSWORD=your-password
 
 # Agent secret for authentication
 AGENT_SECRET=your-secret-token
+
+DEBUG_AGENT=true
+#Client directory
+export ORACLE_CLIENT_LIB_DIR=./oracle
