@@ -112,7 +112,56 @@ curl -X POST http://<STATIC_IP>:5001/run-query \
 
 ---
 
-## 10. Troubleshooting
+## 10. Git SSH-Based Manual Deployment (Push-to-Deploy)
+
+### 10.1. One-Time IT Setup
+
+- **Create a user** (e.g., `oracleagent`) on the VM for running the agent.
+- **Install Python, Git, and Oracle Instant Client** as per previous instructions.
+- **Set up SSH access** for your developer machine:
+  - Add your public SSH key to the `~/.ssh/authorized_keys` of the deployment user on the VM.
+- **Clone the repo** to a known location (e.g., `/home/oracleagent/oracleagent`).
+- **Set up `.env` and the correct `oracle` folder** as before.
+- **(Optional but recommended):** Set up a systemd service for the agent (so it can be restarted easily).
+
+### 10.2. Developer Workflow (You)
+
+- **Make changes and push to your Git repository as usual.**
+- **When you want to deploy:**
+  - SSH into the VM and pull the latest code, or
+  - Use a simple deployment script from your local machine to automate this.
+
+#### Example: Manual SSH Deploy
+
+```bash
+ssh oracleagent@<VM_IP> 'cd /home/oracleagent/oracleagent && git pull && pip install -r requirements.txt && systemctl restart oracleagent'
+```
+
+#### Example: Local Deploy Script (`deploy.sh`)
+
+Create a file named `deploy.sh` on your local machine:
+
+```bash
+#!/bin/bash
+ssh oracleagent@<VM_IP> << EOF
+  cd /home/oracleagent/oracleagent
+  git pull
+  pip install -r requirements.txt
+  systemctl restart oracleagent
+EOF
+```
+- Make this script executable: `chmod +x deploy.sh`
+- Run `./deploy.sh` whenever you want to deploy.
+
+### 10.3. Security & Control
+
+- **Only you (or those with the SSH key) can deploy.**
+- **IT does not need to do anything after initial setup.**
+- **You control when to deploy and can roll back if needed.**
+
+---
+
+## 11. Troubleshooting
 
 - If you see a debug message about Oracle connection failure, check your credentials and that the correct Instant Client is in the `oracle` folder.
 - If you get a 401 error, check your `AGENT_SECRET`.
