@@ -50,6 +50,16 @@ def describe():
         "notes": "Only SELECT queries allowed. Protected by API key and IP whitelist."
     })
 
+@app.route("/dbtest", methods=["GET"])
+def dbtest():
+    try:
+        result = connect_and_query("SELECT 1 FROM dual")
+        if "error" in result:
+            return jsonify({"db_status": "fail", "details": result["error"]}), 500
+        return jsonify({"db_status": "ok", "result": result})
+    except Exception as e:
+        return jsonify({"db_status": "fail", "details": str(e)}), 500
+
 def test_oracle_connection_on_startup():
     try:
         result = connect_and_query("SELECT 1 FROM dual")
