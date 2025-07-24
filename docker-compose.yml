@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  oracleagent-db1:
+    build: .
+    ports:
+      - "5001:5001"
+    environment:
+      # Database 1 Configuration
+      - ORACLE_HOST=${DB1_ORACLE_HOST}
+      - ORACLE_PORT=${DB1_ORACLE_PORT:-1521}
+      - ORACLE_SERVICE=${DB1_ORACLE_SERVICE}
+      - ORACLE_USER=${DB1_ORACLE_USER}
+
+      # Shared Encryption (Security)
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - ENCRYPTED_SECRET=${ENCRYPTED_SECRET}
+      - ENCRYPTED_ORACLE_PASSWORD=${DB1_ENCRYPTED_ORACLE_PASSWORD}
+
+      # Debug Mode (optional)
+      - DEBUG_AGENT=${DEBUG_AGENT:-false}
+
+      # IP Whitelist (optional)
+      - ALLOWED_IPS=${ALLOWED_IPS:-}
+
+      # Oracle Client Configuration
+      - ORACLE_CLIENT_LIB_DIR=/app/oracle
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  oracleagent-db2:
+    build: .
+    ports:
+      - "5002:5001"
+    environment:
+      # Database 2 Configuration
+      - ORACLE_HOST=${DB2_ORACLE_HOST}
+      - ORACLE_PORT=${DB2_ORACLE_PORT:-1521}
+      - ORACLE_SERVICE=${DB2_ORACLE_SERVICE}
+      - ORACLE_USER=${DB2_ORACLE_USER}
+
+      # Shared Encryption (Security)
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - ENCRYPTED_SECRET=${ENCRYPTED_SECRET}
+      - ENCRYPTED_ORACLE_PASSWORD=${DB2_ENCRYPTED_ORACLE_PASSWORD}
+
+      # Debug Mode (optional)
+      - DEBUG_AGENT=${DEBUG_AGENT:-false}
+
+      # IP Whitelist (optional)
+      - ALLOWED_IPS=${ALLOWED_IPS:-}
+
+      # Oracle Client Configuration
+      - ORACLE_CLIENT_LIB_DIR=/app/oracle
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -174,3 +174,127 @@ EOF
 - Set up `.env` with DB credentials, secret, and client path.  
 - Assign a static IP and open the port.  
 - Start the agent and test with your token. 
+
+---
+
+## 14. Docker Deployment (Recommended)
+
+### 14.1. Prerequisites
+
+- **Docker** installed on the target machine
+- **Docker Compose** (optional, for easier deployment)
+
+### 14.2. Build and Run with Docker
+
+#### Option A: Using Docker Compose (Recommended)
+
+1. **Set environment variables** in your shell or export them:
+
+```bash
+# Oracle Database Configuration
+export ORACLE_HOST=your-db-host
+export ORACLE_PORT=1521
+export ORACLE_SERVICE=your-service-name
+export ORACLE_USER=your-username
+export ORACLE_PASSWORD=your-password
+
+# Agent Security (encrypted - use the same encryption key and encrypted values from your .env)
+export ENCRYPTION_KEY=your-encryption-key
+export ENCRYPTED_SECRET=your-encrypted-secret
+export ENCRYPTED_ORACLE_PASSWORD=your-encrypted-oracle-password
+
+# Debug Mode (optional)
+export DEBUG_AGENT=true
+
+# IP Whitelist (optional)
+export ALLOWED_IPS=192.168.1.100,10.0.0.50
+```
+
+2. **Build and run:**
+
+```bash
+docker-compose up -d
+```
+
+#### Option B: Using Docker directly
+
+```bash
+# Build the image
+docker build -t oracleagent .
+
+# Run the container
+docker run -d \
+  --name oracleagent \
+  -p 5001:5001 \
+  -e ORACLE_HOST=your-db-host \
+  -e ORACLE_PORT=1521 \
+  -e ORACLE_SERVICE=your-service-name \
+  -e ORACLE_USER=your-username \
+  -e ORACLE_PASSWORD=your-password \
+  -e ENCRYPTION_KEY=your-encryption-key \
+  -e ENCRYPTED_SECRET=your-encrypted-secret \
+  -e ENCRYPTED_ORACLE_PASSWORD=your-encrypted-oracle-password \
+  -e DEBUG_AGENT=true \
+  oracleagent
+```
+
+### 14.3. Environment Variables (No .env file needed)
+
+All configuration is passed via environment variables:
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `ORACLE_HOST` | Oracle database host | Yes | - |
+| `ORACLE_PORT` | Oracle database port | No | 1521 |
+| `ORACLE_SERVICE` | Oracle service name | Yes | - |
+| `ORACLE_USER` | Oracle username | Yes | - |
+| `ORACLE_PASSWORD` | Oracle password | Yes | - |
+| `ENCRYPTION_KEY` | Encryption key for secrets | Yes | - |
+| `ENCRYPTED_SECRET` | Encrypted API secret | Yes | - |
+| `ENCRYPTED_ORACLE_PASSWORD` | Encrypted Oracle password | Yes | - |
+| `DEBUG_AGENT` | Enable debug messages | No | false |
+| `ALLOWED_IPS` | Comma-separated IP whitelist | No | - |
+
+### 14.4. Docker Benefits
+
+- **Cross-platform:** Same container works on Windows, macOS, Linux
+- **No .env files:** All configuration via environment variables
+- **Consistent environment:** Same setup everywhere
+- **Easy scaling:** Run multiple instances if needed
+- **Health checks:** Built-in health monitoring
+- **Encrypted secrets:** Secure credential handling
+
+### 14.5. Docker Commands
+
+```bash
+# View logs
+docker-compose logs -f oracleagent
+
+# Stop the service
+docker-compose down
+
+# Restart the service
+docker-compose restart
+
+# Update and redeploy
+docker-compose pull
+docker-compose up -d --build
+
+# Check container status
+docker-compose ps
+```
+
+### 14.6. Security Notes
+
+- The agent uses encrypted secrets for enhanced security
+- IP whitelisting is available for additional protection
+- All sensitive data is encrypted at rest and in transit
+- The container runs with minimal privileges
+
+---
+
+## 15. Troubleshooting
+
+- If you see a debug message about Oracle connection failure, check your credentials and that the correct Instant Client is in the `oracle` folder.
+- If you get a 401 error, check your `AGENT_SECRET`.
+- If you get a connection refused error, check firewall rules and that the agent is running. 
