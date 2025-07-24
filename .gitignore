@@ -204,4 +204,4 @@ webhook.log
 deploy/webhook.sh
 
 # Old instantclient folder (we're using instantclient_23_8/ for Docker now)
-instantclient_21_19/
+oracle/

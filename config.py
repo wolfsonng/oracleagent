@@ -3,13 +3,37 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 load_dotenv()
 
+def get_oracle_client_lib_dir():
+    # 1. Use environment variable if set
+    env_path = os.getenv("ORACLE_CLIENT_LIB_DIR")
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    # 2. Try instantclient_23_8 (Linux/x86-64)
+    local_path = os.path.join(os.path.dirname(__file__), "instantclient_23_8")
+    if os.path.exists(local_path):
+        return local_path
+
+    # 3. Try oracle (macOS or legacy)
+    mac_path = os.path.join(os.path.dirname(__file__), "oracle")
+    if os.path.exists(mac_path):
+        return mac_path
+
+    # 4. Try Docker default
+    docker_path = "/app/oracle"
+    if os.path.exists(docker_path):
+        return docker_path
+
+    # 5. Fallback: None (will use thin mode)
+    return None
+
 class Config:
     # Database Configuration
     ORACLE_USER = os.getenv("ORACLE_USER")
     ORACLE_HOST = os.getenv("ORACLE_HOST")
     ORACLE_PORT = os.getenv("ORACLE_PORT")
     ORACLE_SERVICE = os.getenv("ORACLE_SERVICE")
-    ORACLE_CLIENT_LIB_DIR = os.getenv("ORACLE_CLIENT_LIB_DIR")
+    ORACLE_CLIENT_LIB_DIR = get_oracle_client_lib_dir()
 
     # Debug and Security
     DEBUG_AGENT = os.getenv("DEBUG_AGENT", "false").lower() == "true"
