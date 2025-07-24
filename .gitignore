@@ -188,9 +188,11 @@ __marimo__/
 
 # Oracle Agent - CREDENTIALS AND SENSITIVE FILES
 gkey.py
+encrypt_credentials.py
 *.env
 *.env.*
 envexample.py
+testing/
 test_config.py
 
 # Logs
