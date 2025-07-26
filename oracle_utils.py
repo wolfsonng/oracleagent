@@ -38,13 +38,13 @@ if not init_oracle_client():
 def connect_and_query(sql):
     try:
         dsn = oracledb.makedsn(
-            config.ORACLE_HOST,
-            config.ORACLE_PORT,
-            service_name=config.ORACLE_SERVICE
+            Config.ORACLE_HOST,
+            Config.ORACLE_PORT,
+            service_name=Config.ORACLE_SERVICE
         )
         conn = oracledb.connect(
-            user=config.ORACLE_USER,
-            password=config.ORACLE_PASSWORD,
+            user=Config.ORACLE_USER,
+            password=Config.get_oracle_password(),
             dsn=dsn
         )
         cursor = conn.cursor()

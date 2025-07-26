@@ -37,6 +37,67 @@ def run_query():
     result = connect_and_query(sql)
     return jsonify(result)
 
+@app.route("/", methods=["GET"])
+def index():
+    # Test database connection
+    try:
+        result = connect_and_query("SELECT 1 FROM dual")
+        db_status = "✅" if "error" not in result else "❌"
+        db_message = "Connected" if "error" not in result else "Disconnected"
+    except Exception as e:
+        db_status = "❌"
+        db_message = "Error"
+
+    # Get system info
+    import platform
+    import datetime
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>System Status</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
+            .container {{ max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            .header {{ text-align: center; margin-bottom: 30px; }}
+            .status-item {{ display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: #f8f9fa; border-radius: 5px; }}
+            .status-ok {{ border-left: 4px solid #28a745; }}
+            .status-error {{ border-left: 4px solid #dc3545; }}
+            .timestamp {{ text-align: center; color: #6c757d; font-size: 0.9em; margin-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🖥️ System Status Dashboard</h1>
+                <p>Infrastructure Monitoring Service</p>
+            </div>
+
+            <div class="status-item status-ok">
+                <span><strong>Web Service</strong></span>
+                <span>✅ Online</span>
+            </div>
+
+            <div class="status-item {'status-ok' if db_status == '✅' else 'status-error'}">
+                <span><strong>Data Service</strong></span>
+                <span>{db_status} {db_message}</span>
+            </div>
+
+            <div class="status-item status-ok">
+                <span><strong>Platform</strong></span>
+                <span>✅ {platform.system()} {platform.release()}</span>
+            </div>
+
+            <div class="timestamp">
+                Last updated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
@@ -61,12 +122,29 @@ def dbtest():
         return jsonify({"db_status": "fail", "details": str(e)}), 500
 
 def test_oracle_connection_on_startup():
+    print("🔍 Testing database connection...")
     try:
         result = connect_and_query("SELECT 1 FROM dual")
-        logging.info("Startup DB connection successful.")
+        if "error" in result:
+            print(f"❌ Database connection failed: {result['error']}")
+            logging.error(f"Startup DB connection failed: {result['error']}")
+        else:
+            print("✅ Database connection successful!")
+            logging.info("Startup DB connection successful.")
     except Exception as e:
+        print(f"❌ Database connection failed: {e}")
         logging.warning(f"Startup DB connection failed: {e}")
 
 if __name__ == "__main__":
+    print("🚀 Starting Oracle Agent...")
+    print(f"📊 Debug mode: {config.DEBUG_AGENT}")
+    print(f"🏠 Host: {Config.ORACLE_HOST}")
+    print(f"🔌 Port: {Config.ORACLE_PORT}")
+    print(f"🗄️  Service: {Config.ORACLE_SERVICE}")
+    print(f"👤 User: {Config.ORACLE_USER}")
+    print("-" * 50)
+
     test_oracle_connection_on_startup()
+    print("-" * 50)
+    print("🌐 Starting Flask server on http://0.0.0.0:5001")
     app.run(host="0.0.0.0", port=5001)
