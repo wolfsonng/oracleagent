@@ -1,37 +1,34 @@
 import os
+import sys
+import platform
+import logging
 import oracledb
 from config import Config
-import logging
-
-config = Config()
 
 def init_oracle_client():
-    """Initialize Oracle client with better error handling"""
-    if not config.ORACLE_CLIENT_LIB_DIR:
-        logging.warning("ORACLE_CLIENT_LIB_DIR not set, trying thin mode")
+    lib_dir = os.path.abspath(Config.ORACLE_CLIENT_LIB_DIR)
+    system = platform.system().lower()
+
+    if system == "darwin":  # macOS
+        lib_name = "libclntsh.dylib"
+    elif system == "windows":
+        lib_name = "oci.dll"
+    else:  # Assume Linux/Unix
+        lib_name = "libclntsh.so"
+
+    lib_path = os.path.join(lib_dir, lib_name)
+    if not os.path.exists(lib_path):
+        logging.error(f"{lib_name} not found at: {lib_path}")
+        logging.warning("Oracle client initialization failed, will use thin mode")
         return False
 
     try:
-        lib_dir = os.path.abspath(config.ORACLE_CLIENT_LIB_DIR)
-        logging.info(f"Initializing Oracle client from: {lib_dir}")
-
-        # Check if the directory exists
-        if not os.path.exists(lib_dir):
-            logging.error(f"Oracle client directory does not exist: {lib_dir}")
-            return False
-
-        # Check if libclntsh.so exists
-        libclntsh_path = os.path.join(lib_dir, "libclntsh.so")
-        if not os.path.exists(libclntsh_path):
-            logging.error(f"libclntsh.so not found at: {libclntsh_path}")
-            return False
-
         oracledb.init_oracle_client(lib_dir=lib_dir)
-        logging.info("Oracle client initialized successfully")
+        logging.info(f"Oracle client initialized with {lib_name} at {lib_dir}")
         return True
-
     except Exception as e:
-        logging.error(f"Failed to initialize Oracle client: {e}")
+        logging.error(f"Oracle client initialization error: {e}")
+        logging.warning("Will use thin mode")
         return False
 
 # Try to initialize Oracle client
