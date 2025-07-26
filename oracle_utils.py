@@ -23,6 +23,10 @@ def init_oracle_client():
         return False
 
     try:
+        # Set environment variables for Oracle client
+        os.environ['LD_LIBRARY_PATH'] = lib_dir
+        os.environ['ORACLE_HOME'] = lib_dir
+
         oracledb.init_oracle_client(lib_dir=lib_dir)
         logging.info(f"Oracle client initialized with {lib_name} at {lib_dir}")
         return True
